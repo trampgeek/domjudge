@@ -27,6 +27,8 @@ require_once(LIBWWWDIR . '/forms.php');
 
 // The functions do_login and show_loginpage, if called, do not return.
 if ( @$_POST['cmd']=='login' ) do_login();
+if ( @$_POST['cmd']=='register' ) do_register();
+
 if ( !logged_in() ) show_loginpage();
 
 if ( !checkrole('team') ) {

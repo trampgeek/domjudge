@@ -163,12 +163,23 @@ Please supply your credentials below, or contact a staff member for assistance.
 </form>
 
 <?php
+global $DB;
+$affiliations = $DB->q('TABLE SELECT affilid, shortname, name FROM team_affiliation ORDER BY name');
 if (dbconfig_get('allow_registration', false)) { ?>
 <p>If you do not have an account, you can register for one below: </p>
 <form action="<?php echo $_SERVER['PHP_SELF'] ?>" method="post">
 <input type="hidden" name="cmd" value="register" />
 <table>
 <tr><td><label for="login">Username:</label></td><td><input type="text" id="login" name="login" value="" size="15" maxlength="15" accesskey="l" /></td></tr>
+<tr><td><label for="affiliation">Affiliation:</label></td><td><select required name="affil">
+<option selected disabled value="">Select one ...</option>";
+<?php
+foreach($affiliations as $affil) {
+    echo "<option value=\"{$affil['affilid']}\">{$affil['name']}</option>";
+} ?>
+<option class="select-dash" disabled="disabled">-----------------</option>
+<option value="0">OTHER (not listed)</option>
+</select>
 <tr><td><label for="passwd">Password:</label></td><td><input type="password" id="passwd" name="passwd" value="" size="15" maxlength="255" accesskey="p" /></td></tr>
 <tr><td><label for="passwd2">Retype password:</label></td><td><input type="password" id="passwd2" name="passwd2" value="" size="15" maxlength="255" accesskey="r" /></td></tr>
 <tr><td></td><td><input type="submit" value="Register" /></td></tr>
@@ -352,6 +363,7 @@ function do_register() {
         $login = trim($_POST['login']);
         $pass = trim($_POST['passwd']);
         $pass2 = trim($_POST['passwd2']);
+	$affilid = trim($_POST['affil']);
 
         if ( $login == '' || $pass == '') {
             error("You must enter all fields");
@@ -379,6 +391,9 @@ function do_register() {
         $i['categoryid'] = 2; // Self-registered category id
         $i['enabled'] = 1;
         $i['comments'] = "Registered by $ip on " . date('r');
+        if ($affilid) {
+           $i['affilid'] = $affilid;
+        }
 
         $teamid = $DB->q("RETURNID INSERT INTO team SET %S", $i);
         auditlog('team', $teamid, 'registered by ' . $ip);
